@@ -82,6 +82,40 @@ app.get('/api/auth/current-user', (req, res) => {
   }
 });
 
+// Endpoint pour créer des catégories
+app.post('/api/categories', async (req, res) => {
+  try {
+    const { name, slug, order_index } = req.body;
+    
+    // Validation des données
+    if (!name || !slug || typeof order_index !== 'number') {
+      return res.status(400).json({ error: 'Invalid category data' });
+    }
+
+    const result = db.prepare(
+      'INSERT INTO categories (id, name, slug, order_index) VALUES (?, ?, ?, ?)'
+    ).run(uuidv4(), name, slug, order_index);
+
+    res.status(201).json({
+      id: uuidv4(),
+      name,
+      slug,
+      order_index,
+      created_at: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Category creation error:', error);
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: 'Category creation failed',
+        details: error.message || 'Unknown error',
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    }
+  }
+});
+
 app.post('/api/auth/signup', async (req, res) => {
   const MAX_RETRIES = 3;
   const RETRY_DELAY = 100;
@@ -168,6 +202,17 @@ const db = new Database('database.sqlite');
 
 // Initialize database schema
 db.prepare(`
+  CREATE TABLE IF NOT EXISTS categories (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    order_index INTEGER NOT NULL,
+    created_at TEXT,
+    updated_at TEXT
+  )
+`).run();
+
+db.prepare(`
   CREATE TABLE IF NOT EXISTS products (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -227,6 +272,12 @@ app.get('/api/categories', (req, res) => {
 app.post('/api/categories', (req, res) => {
   try {
     const { name, slug, order_index } = req.body;
+    
+    // Vérifier si le slug existe déjà
+    const existing = db.prepare('SELECT id FROM categories WHERE slug = ?').get(slug);
+    if (existing) {
+      return res.status(400).json({ error: 'Ce slug est déjà utilisé' });
+    }
     const id = uuidv4();
     const now = new Date().toISOString();
 
@@ -238,7 +289,7 @@ app.post('/api/categories', (req, res) => {
     res.json({ id, name, slug, order_index: order_index || 0, created_at: now, updated_at: now });
   } catch (error) {
     console.error('Error creating category:', error);
-    res.status(500).json({ error: 'Failed to create category' });
+    res.status(500).json({ error: 'Échec de la création - vérifiez les données et l\'unicité du slug' });
   }
 });
 

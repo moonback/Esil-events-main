@@ -113,18 +113,38 @@ export const getAllCategories = async (): Promise<Category[]> => {
 // Create a new category
 export const createCategory = async (category: Omit<Category, 'id' | 'created_at' | 'updated_at'>): Promise<Category> => {
   try {
-    const response = await fetch('/api/categories', {
+    const response = await fetch('http://localhost:3006/api/categories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(category)
     });
-    if (!response.ok) throw new Error('Failed to create category');
-    const now = new Date().toISOString();
-    const result = await response.json();
-    return result as Category;
+    if (!response.ok) {
+      const responseText = await response.text();
+    let errorData;
+    try {
+      errorData = JSON.parse(responseText);
+    } catch (e) {
+      throw new Error(`Invalid server response: ${responseText}`);
+    }
+    
+    if (!errorData.error || typeof errorData.error !== 'string') {
+      console.error('Invalid error structure:', errorData);
+      throw new Error('Server returned malformed error');
+    }
+    
+    throw new Error(errorData.error);
+    }
+    const responseData = await response.json();
+    
+    if (!responseData.id || !responseData.name) {
+      console.error('Invalid category structure:', responseData);
+      throw new Error('Invalid category data from server');
+    }
+    
+    return responseData as Category;
   } catch (error) {
     console.error('Error creating category:', error);
-    throw new Error('Failed to create category');
+    throw new Error(error instanceof Error ? error.message : 'Une erreur inconnue est survenue');
   }
 };
 
@@ -136,11 +156,26 @@ export const updateCategory = async (id: string, category: Partial<Category>): P
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(category)
     });
-    if (!response.ok) throw new Error('Failed to update category');
+    if (!response.ok) {
+      const responseText = await response.text();
+      let errorData;
+      try {
+        errorData = JSON.parse(responseText);
+      } catch (e) {
+        throw new Error(`Invalid server response: ${responseText}`);
+      }
+      
+      if (!errorData.error || typeof errorData.error !== 'string') {
+        console.error('Invalid error structure:', errorData);
+        throw new Error('Server returned malformed error');
+      }
+      
+      throw new Error(errorData.error);
+    }
     return await response.json();
   } catch (error) {
     console.error('Error updating category:', error);
-    throw new Error('Failed to update category');
+    throw new Error(error instanceof Error ? error.message : 'Failed to update category');
   }
 };
 
@@ -150,7 +185,22 @@ export const deleteCategory = async (id: string): Promise<void> => {
     const response = await fetch(`/api/categories/${id}`, {
       method: 'DELETE'
     });
-    if (!response.ok) throw new Error('Failed to delete category');
+    if (!response.ok) {
+      const responseText = await response.text();
+      let errorData;
+      try {
+        errorData = JSON.parse(responseText);
+      } catch (e) {
+        throw new Error(`Invalid server response: ${responseText}`);
+      }
+      
+      if (!errorData.error || typeof errorData.error !== 'string') {
+        console.error('Invalid error structure:', errorData);
+        throw new Error('Server returned malformed error');
+      }
+      
+      throw new Error(errorData.error);
+    }
   } catch (error) {
     console.error('Error deleting category:', error);
     throw new Error('Failed to delete category and its dependencies');
@@ -165,11 +215,26 @@ export const createSubcategory = async (subcategory: Omit<Subcategory, 'id' | 'c
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(subcategory)
     });
-    if (!response.ok) throw new Error('Failed to create subcategory');
+    if (!response.ok) {
+      const responseText = await response.text();
+      let errorData;
+      try {
+        errorData = JSON.parse(responseText);
+      } catch (e) {
+        throw new Error(`Invalid server response: ${responseText}`);
+      }
+      
+      if (!errorData.error || typeof errorData.error !== 'string') {
+        console.error('Invalid error structure:', errorData);
+        throw new Error('Server returned malformed error');
+      }
+      
+      throw new Error(errorData.error);
+    }
     return await response.json();
   } catch (error) {
     console.error('Error creating subcategory:', error);
-    throw new Error('Failed to create subcategory');
+    throw new Error(error instanceof Error ? error.message : 'Failed to create subcategory');
   }
 };
 
@@ -181,11 +246,11 @@ export const updateSubcategory = async (id: string, subcategory: Partial<Subcate
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(subcategory)
     });
-    if (!response.ok) throw new Error('Failed to update subcategory');
+    if (!response.ok) throw new Error(Error instanceof Error ? Error.message : 'Failed to update subcategory');
     return await response.json();
   } catch (error) {
     console.error('Error updating subcategory:', error);
-    throw new Error('Failed to update subcategory');
+    throw new Error(error instanceof Error ? error.message : 'Failed to update subcategory');
   }
 };
 
@@ -195,10 +260,10 @@ export const deleteSubcategory = async (id: string): Promise<void> => {
     const response = await fetch(`/api/subcategories/${id}`, {
       method: 'DELETE'
     });
-    if (!response.ok) throw new Error('Failed to delete subcategory');
+    if (!response.ok) throw new Error(Error instanceof Error ? Error.message : 'Failed to delete subcategory');
   } catch (error) {
     console.error('Error deleting subcategory:', error);
-    throw new Error('Failed to delete subcategory and its dependencies');
+    throw new Error(error instanceof Error ? error.message : 'Failed to delete subcategory and its dependencies');
   }
 };
 
@@ -213,7 +278,7 @@ export const reorderCategories = async (orderedIds: string[]): Promise<void> => 
     if (!response.ok) throw new Error('Failed to reorder categories');
   } catch (error) {
     console.error('Error reordering categories:', error);
-    throw new Error('Failed to reorder categories');
+    throw new Error(error instanceof Error ? error.message : 'Failed to reorder categories');
   }
 };
 
@@ -228,7 +293,7 @@ export const reorderSubcategories = async (categoryId: string, orderedIds: strin
     if (!response.ok) throw new Error('Failed to reorder subcategories');
   } catch (error) {
     console.error('Error reordering subcategories:', error);
-    throw new Error('Failed to reorder subcategories');
+    throw new Error(error instanceof Error ? error.message : 'Failed to reorder subcategories');
   }
 };
 
@@ -288,6 +353,6 @@ export const reorderSubSubcategories = async (subcategoryId: string, orderedIds:
     if (!response.ok) throw new Error('Failed to reorder subsubcategories');
   } catch (error) {
     console.error('Error reordering subsubcategories:', error);
-    throw new Error('Failed to reorder subsubcategories');
+    throw new Error(error instanceof Error ? error.message : 'Failed to reorder subsubcategories');
   }
 };

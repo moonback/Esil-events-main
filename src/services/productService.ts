@@ -152,8 +152,24 @@ export const createProduct = async (productData: ProductFormData) => {
   });
   const responseText = await response.text();
 if (!response.ok) {
-  const errorData = responseText ? JSON.parse(responseText) : {};
-  throw new Error(errorData.error || `Erreur HTTP ${response.status}`);
+  let errorData;
+  try {
+    errorData = JSON.parse(responseText);
+  } catch (e) {
+    throw new Error(`Invalid server response: ${responseText}`);
+  }
+  
+  if (!errorData.error || typeof errorData.error !== 'string') {
+    console.error('Invalid error structure:', errorData);
+    throw new Error('Server returned malformed error');
+  }
+  
+  throw new Error(JSON.stringify({
+    error: errorData.error,
+    code: 'PROD-001',
+    details: 'Failed to process product operation',
+    status: response.status
+  }));
 }
   return response.json();
 };

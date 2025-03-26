@@ -25,7 +25,16 @@ const LoginForm: React.FC = () => {
         setError('Erreur d\'authentification');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Identifiants invalides');
+      if (err instanceof Error) {
+        try {
+          const errorObj = JSON.parse(err.message);
+          setError(errorObj.details || 'Erreur d\'authentification');
+        } catch {
+          setError(err.message);
+        }
+      } else {
+        setError('Identifiants invalides');
+      }
     } finally {
       setLoading(false);
     }

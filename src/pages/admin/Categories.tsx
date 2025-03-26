@@ -126,7 +126,7 @@ const AdminCategories: React.FC = () => {
         category_id: categoryId,
         name,
         slug,
-        order_index: categories.find(c => c.id === categoryId)?.subcategories?.length || 0 + 1
+        order_index: (categories.find(c => c.id === categoryId)?.subcategories?.length || 0) + 1
       });
       loadCategories();
     } catch (err) {
@@ -191,7 +191,11 @@ const AdminCategories: React.FC = () => {
         subcategory_id: subcategoryId,
         name,
         slug,
-        order_index: 1
+        order_index: (categories
+  .find(c => c.id === subcategoryId)
+  ?.subcategories
+  ?.find(s => s.id === subcategoryId)
+  ?.subsubcategories?.length || 0) + 1
       });
       loadCategories();
     } catch (err) {
@@ -289,13 +293,7 @@ const AdminCategories: React.FC = () => {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Gestion des catégories</h1>
           <div className="flex gap-4">
-            <button
-              onClick={handleAddCategory}
-              className="flex items-center px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Nouvelle catégorie
-            </button>
+           
           </div>
         </div>
 
@@ -321,6 +319,13 @@ const AdminCategories: React.FC = () => {
             <Filter className="w-4 h-4 mr-2" />
             Filtres
           </button>
+          <button
+              onClick={handleAddCategory}
+              className="flex items-center px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Nouvelle catégorie
+            </button>
         </div>
 
         {/* Categories List */}
@@ -456,4 +461,4 @@ const AdminCategories: React.FC = () => {
   );
 };
 
-export default AdminCategories; 
+export default AdminCategories;

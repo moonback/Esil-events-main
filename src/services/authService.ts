@@ -44,11 +44,26 @@ export const signIn = async (email: string, password: string): Promise<{ user: U
       const errorData = await response.json().catch(() => ({}));
       console.error(`Échec de la connexion - Status: ${response.status}, Email: ${email}`);
       if (response.status === 401) {
-        throw new Error('Identifiants invalides');
+        throw new Error(JSON.stringify({ 
+  error: 'Authentication Error',
+  code: 'AUTH-001',
+  details: 'Invalid email or password',
+  status: 401
+}));
       } else if (response.status === 409) {
-        throw new Error('Cet email est déjà utilisé');
+        throw new Error(JSON.stringify({ 
+  error: 'Validation Error',
+  code: 'AUTH-002',
+  details: 'Email already exists',
+  status: 409
+}));
       } else if (response.status === 404) {
-        throw new Error('Utilisateur non trouvé');
+        throw new Error(JSON.stringify({ 
+  error: 'Not Found',
+  code: 'AUTH-003',
+  details: 'User not found',
+  status: 404
+}));
       } else {
         throw new Error(errorData.error || `Erreur de connexion (${response.status})`);
       }
@@ -78,11 +93,26 @@ export const signUp = async (email: string, password: string): Promise<{ user: U
       const errorData = await response.json().catch(() => ({}));
       console.error(`Échec de l'inscription - Status: ${response.status}, Email: ${email}`);
       if (response.status === 401) {
-        throw new Error('Identifiants invalides');
+        throw new Error(JSON.stringify({ 
+  error: 'Authentication Error',
+  code: 'AUTH-001',
+  details: 'Invalid email or password',
+  status: 401
+}));
       } else if (response.status === 409) {
-        throw new Error('Cet email est déjà utilisé');
+        throw new Error(JSON.stringify({ 
+  error: 'Validation Error',
+  code: 'AUTH-002',
+  details: 'Email already exists',
+  status: 409
+}));
       } else if (response.status === 404) {
-        throw new Error('Utilisateur non trouvé');
+        throw new Error(JSON.stringify({ 
+  error: 'Not Found',
+  code: 'AUTH-003',
+  details: 'User not found',
+  status: 404
+}));
       } else {
         throw new Error(errorData.error || `Erreur de connexion (${response.status})`);
       }
