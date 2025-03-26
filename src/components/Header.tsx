@@ -164,11 +164,22 @@ const Header: React.FC = () => {
                     </span>
                   )}
                 </Link>
-
+                {isAdminUser && (
+                            <Link to="/admin" className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200">
+                              <Settings className="w-4 h-4 mr-2" />
+                              Administration
+                            </Link>
+                          )}
                 {user ? (
                   <div className="relative user-menu-container">
                     <button
-                      onClick={() => setShowUserMenu(!showUserMenu)}
+                      onClick={() => {
+                        setShowUserMenu(!showUserMenu);
+                        // Rediriger vers admin si l'utilisateur est admin
+                        if (isAdminUser) {
+                          navigate('/admin');
+                        }
+                      }}
                       className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
                     >
                       <User className="w-5 h-5 text-gray-700 dark:text-gray-200" />

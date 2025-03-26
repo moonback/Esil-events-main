@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signIn } from '../services/authService';
+import { getCurrentUser, signIn } from '../services/authService';
 
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
@@ -13,12 +13,14 @@ const LoginForm: React.FC = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
+  
     try {
       const response = await signIn(email, password);
       if (response && response.token) {
         localStorage.setItem('auth_token', response.token);
-        
+        // Rediriger vers admin si l'utilisateur est admin
+        const user = await getCurrentUser(response.token);
+        navigate('/');
       } else {
         setError('Erreur d\'authentification');
       }
