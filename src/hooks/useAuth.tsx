@@ -53,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { user, token } = await authService.signIn(email, password);
       localStorage.setItem(TOKEN_KEY, token);
       setUser(user);
+      await checkUser();
     } catch (error) {
       console.error('Error signing in:', error);
       throw error;

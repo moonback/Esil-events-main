@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import { isAdmin } from '../services/authService';
 
 interface AdminRouteProps {
@@ -7,24 +8,11 @@ interface AdminRouteProps {
 }
 
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
-  const [loading, setLoading] = useState(true);
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const { isAdminUser, loading } = useAuth();
   const location = useLocation();
+  const isAuthorized = isAdminUser;
 
-  useEffect(() => {
-    const checkAdmin = async () => {
-      try {
-        const authorized = await isAdmin();
-        setIsAuthorized(authorized);
-      } catch (error) {
-        setIsAuthorized(false);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    checkAdmin();
-  }, []);
 
   if (loading) {
     return (
@@ -41,4 +29,4 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   return <>{children}</>;
 };
 
-export default AdminRoute; 
+export default AdminRoute;

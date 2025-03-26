@@ -17,8 +17,8 @@ const LoginForm: React.FC = () => {
     try {
       const response = await signIn(email, password);
       if (response && response.token) {
-        localStorage.setItem('authToken', response.token);
-        navigate('/admin/products');
+        localStorage.setItem('auth_token', response.token);
+        
       } else {
         setError('Erreur d\'authentification');
       }
