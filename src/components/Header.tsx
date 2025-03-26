@@ -29,7 +29,11 @@ const Header: React.FC = () => {
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        await signOut(token);
+        localStorage.removeItem('auth_token');
+      }
       navigate('/');
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error);

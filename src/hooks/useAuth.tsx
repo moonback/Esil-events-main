@@ -5,6 +5,7 @@ import type { User } from '../services/authService';
 type AuthContextType = {
   user: User | null;
   loading: boolean;
+  isAdminUser: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -16,6 +17,7 @@ const TOKEN_KEY = 'auth_token';
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdminUser, setIsAdminUser] = useState(false);
 
   useEffect(() => {
     checkUser();
@@ -36,9 +38,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const token = localStorage.getItem(TOKEN_KEY);
       const user = await authService.getCurrentUser(token || undefined);
       setUser(user);
+      setIsAdminUser(user?.role === 'admin');
     } catch (error) {
       console.error('Error checking user:', error);
       localStorage.removeItem(TOKEN_KEY);
+      setIsAdminUser(false);
     } finally {
       setLoading(false);
     }
@@ -72,6 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     user,
     loading,
+    isAdminUser,
     signIn,
     signOut,
   };
