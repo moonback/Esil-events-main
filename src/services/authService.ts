@@ -22,7 +22,9 @@ export const getCurrentUser = async (token?: string): Promise<User | null> => {
     });
     
     if (!response.ok) return null;
-    return await response.json();
+    const userData = await response.json();
+    console.log('User data from API:', userData);
+    return userData;
   } catch (error) {
     console.error('Error fetching current user:', error);
     return null;
