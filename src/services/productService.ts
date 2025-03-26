@@ -6,7 +6,7 @@ import { getCurrentUser } from './authService';
 
 // Fetch all products
 export const getAllProducts = async () => {
-  const response = await fetch('http://localhost:3004/api/products');
+  const response = await fetch('http://localhost:3006/api/products');
   return response.json();
 };
 
@@ -62,7 +62,7 @@ export const getProductsByCategory = async (category: string): Promise<Product[]
 // Fetch products by subcategory
 export const getProductsBySubCategory = async (category: string, subCategory: string): Promise<Product[]> => {
   try {
-    const response = await fetch(`http://localhost:3004/api/products?category=${encodeURIComponent(category)}&subCategory=${encodeURIComponent(subCategory)}`);
+    const response = await fetch(`http://localhost:3006/api/products?category=${encodeURIComponent(category)}&subCategory=${encodeURIComponent(subCategory)}`);
     if (!response.ok) throw new Error('Network response was not ok');
     const products = await response.json();
     
@@ -102,7 +102,7 @@ export const getProductsBySubCategory = async (category: string, subCategory: st
 // Fetch a single product by ID
 export const getProductById = async (id: string): Promise<Product | null> => {
   try {
-    const response = await fetch(`http://localhost:3004/api/products/${encodeURIComponent(id)}`);
+    const response = await fetch(`http://localhost:3006/api/products/${encodeURIComponent(id)}`);
     if (!response.ok) return null;
     const product = await response.json();
     
@@ -141,7 +141,7 @@ export const getProductById = async (id: string): Promise<Product | null> => {
 
 // Create a new product
 export const createProduct = async (productData: ProductFormData) => {
-  const response = await fetch('http://localhost:3004/api/products', {
+  const response = await fetch('http://localhost:3006/api/products', {
     headers: { 'Content-Type': 'application/json' },
     method: 'POST',
     body: JSON.stringify({
@@ -189,7 +189,7 @@ export const updateProduct = async (token: string | undefined, id: string, produ
     );
 
     // Execute the update
-    const response = await fetch(`http://localhost:3004/api/products/${id}`, {
+    const response = await fetch(`http://localhost:3006/api/products/${id}`, {
       headers: { 
         'Content-Type': 'application/json', 
         'Authorization': `Bearer ${token}` 
@@ -218,7 +218,7 @@ export const deleteProduct = async (token: string | undefined, id: string): Prom
     const user = await getCurrentUser(token);
     if (!user || user.role !== 'admin') throw new Error('Unauthorized');
 
-    const response = await fetch(`http://localhost:3004/api/products/${id}`, {
+    const response = await fetch(`http://localhost:3006/api/products/${id}`, {
       headers: { 
         'Content-Type': 'application/json', 
         'Authorization': `Bearer ${token}` 

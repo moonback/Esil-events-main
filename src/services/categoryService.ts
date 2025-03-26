@@ -32,7 +32,7 @@ export interface SubSubcategory {
 // Fetch all categories with their subcategories using a single query
 export const getAllCategories = async (): Promise<Category[]> => {
   try {
-    const response = await fetch('http://localhost:3004/api/categories');
+    const response = await fetch('http://localhost:3006/api/categories');
     if (!response.ok) throw new Error(`Network response not ok: ${response.status}`);
     const responseData = await response.json();
     const result = responseData.categories ?? responseData;

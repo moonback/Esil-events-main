@@ -35,7 +35,17 @@ const RegisterForm: React.FC = () => {
         setError('Erreur lors de l\'inscription');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de l\'inscription');
+      if (err instanceof Error) {
+        if (err.message.includes('Cet email est déjà utilisé')) {
+          setError('Cet email est déjà utilisé');
+        } else if (err.message.includes('Identifiants invalides')) {
+          setError('Identifiants invalides');
+        } else {
+          setError('Une erreur est survenue lors de l\'inscription');
+        }
+      } else {
+        setError('Une erreur est survenue lors de l\'inscription');
+      }
     } finally {
       setLoading(false);
     }

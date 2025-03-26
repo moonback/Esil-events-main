@@ -83,31 +83,60 @@ app.get('/api/auth/current-user', (req, res) => {
 });
 
 app.post('/api/auth/signup', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const existingUser = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
-    
-    if (existingUser) {
-      return res.status(400).json({ error: 'User already exists' });
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY = 100;
+  let userId, sessionToken;
+  
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const { email, password } = req.body;
+      
+      const transaction = db.transaction(() => {
+        const existingUser = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+        
+        if (existingUser) {
+          throw new Error('User already exists');
+        }
+
+        const hashedPassword = bcrypt.hashSync(password, 10);
+        userId = uuidv4();
+        sessionToken = uuidv4();
+        
+        db.prepare('INSERT INTO users (id, email, password_hash, role) VALUES (?, ?, ?, ?)')
+          .run(userId, email, hashedPassword, 'user');
+      });
+      
+      transaction();
+      break;
+    } catch (error) {
+      if (error.code === 'SQLITE_BUSY' && attempt < MAX_RETRIES) {
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * attempt));
+        continue;
+      }
+      
+      if (error.message === 'User already exists') {
+        return res.status(400).json({ error: error.message });
+      }
+      
+      console.error('Signup error:', error);
+      return res.status(500).json({ 
+        error: 'Database error', 
+        code: error.code,
+        message: error.message 
+      });
     }
+  }
 
-    const hashedPassword = bcrypt.hashSync(password, 10);
-    const userId = uuidv4();
-    
-    db.prepare('INSERT INTO users (id, email, password_hash, role) VALUES (?, ?, ?, ?)')
-      .run(userId, email, hashedPassword, 'user');
-
-    const sessionToken = uuidv4();
+  try {
     const expiresAt = new Date(Date.now() + 86400 * 1000); // 24 hours
     
     db.prepare('INSERT INTO sessions (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)')
       .run(uuidv4(), userId, sessionToken, expiresAt.toISOString());
 
     res.status(201).json({
-      user: { id: userId, email, role: 'user' },
+      user: { id: userId, email: req.body.email, role: 'user' },
       token: sessionToken
     });
-
   } catch (error) {
     console.error('Signup error:', error);
     res.status(500).json({ error: 'Registration failed' });
@@ -130,8 +159,8 @@ app.post('/api/auth/signout', (req, res) => {
 });
 
 // Start server
-app.listen(3004, () => {
-  console.log('Server running on http://localhost:3004');
+app.listen(3006, () => {
+  console.log('Server running on http://localhost:3006');
 });
 
 
@@ -537,7 +566,7 @@ app.post('/api/auth/signup', (req, res) => {
     // Check if user already exists
     const existingUser = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
     if (existingUser) {
-      return res.status(409).json({ error: 'User already exists' });
+      return res.status(409).json({ error: 'Cet email est déjà utilisé' });
     }
 
     // Hash password
@@ -664,7 +693,7 @@ app.post('/api/auth/signout', (req, res) => {
   }
 });
 
-const PORT = 3004; // Change to an available port
+const PORT = 3006; // Change to an available port
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

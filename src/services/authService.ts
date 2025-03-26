@@ -16,7 +16,7 @@ export const getCurrentUser = async (token?: string): Promise<User | null> => {
   if (!token) return null;
   
   try {
-    const response = await fetch('http://localhost:3004/api/auth/current-user', {
+    const response = await fetch('http://localhost:3006/api/auth/current-user', {
       headers: { Authorization: `Bearer ${token}` }
     });
     
@@ -30,7 +30,7 @@ export const getCurrentUser = async (token?: string): Promise<User | null> => {
 
 export const signIn = async (email: string, password: string): Promise<{ user: User; token: string }> => {
   try {
-    const response = await fetch('http://localhost:3004/api/auth/signin', {
+    const response = await fetch('http://localhost:3006/api/auth/signin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
@@ -40,6 +40,8 @@ export const signIn = async (email: string, password: string): Promise<{ user: U
       const errorData = await response.json().catch(() => ({}));
       if (response.status === 401) {
         throw new Error('Identifiants invalides');
+      } else if (response.status === 409) {
+        throw new Error('Cet email est déjà utilisé');
       } else if (response.status === 404) {
         throw new Error('Utilisateur non trouvé');
       } else {
@@ -73,7 +75,7 @@ export const signIn = async (email: string, password: string): Promise<{ user: U
 
 export const signUp = async (email: string, password: string): Promise<{ user: User; token: string }> => {
   try {
-    const response = await fetch('http://localhost:3004/api/auth/signup', {
+    const response = await fetch('http://localhost:3006/api/auth/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
@@ -83,6 +85,8 @@ export const signUp = async (email: string, password: string): Promise<{ user: U
       const errorData = await response.json().catch(() => ({}));
       if (response.status === 401) {
         throw new Error('Identifiants invalides');
+      } else if (response.status === 409) {
+        throw new Error('Cet email est déjà utilisé');
       } else if (response.status === 404) {
         throw new Error('Utilisateur non trouvé');
       } else {
