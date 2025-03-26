@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Interdire l'accès aux pages d'administration
+Disallow: /admin/
+Disallow: /admin/*
+
+# Sitemap
+Sitemap: https://esil-events.com/sitemap.xml 
