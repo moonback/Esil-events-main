@@ -36,17 +36,30 @@ export const signIn = async (email: string, password: string): Promise<{ user: U
       body: JSON.stringify({ email, password })
     });
 
-    const responseText = await response.text();
-    const responseData = responseText ? JSON.parse(responseText) : {};
-    const data = responseData.data || responseData;
-
     if (!response.ok) {
-      throw new Error(data.error || `Erreur HTTP ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        throw new Error('Identifiants invalides');
+      } else if (response.status === 404) {
+        throw new Error('Utilisateur non trouvé');
+      } else {
+        throw new Error(errorData.error || `Erreur de connexion (${response.status})`);
+      }
     }
 
-    if (!data.token || !data.user) {
-      console.error('Structure de réponse invalide:', responseData);
-      throw new Error('Réponse du serveur invalide');
+    const data = await response.json();
+    if (!data || typeof data !== 'object') {
+      throw new Error('Réponse du serveur invalide: format incorrect');
+    }
+
+    if (!data.token || !data.user || typeof data.user !== 'object') {
+      console.error('Structure de réponse invalide:', data);
+      throw new Error('Réponse du serveur invalide: données manquantes');
+    }
+
+    if (!data.user.id || !data.user.email || !data.user.role) {
+      console.error('Structure de réponse invalide:', data);
+      throw new Error('Réponse du serveur invalide: données utilisateur incomplètes');
     }
 
     return data;
@@ -66,17 +79,30 @@ export const signUp = async (email: string, password: string): Promise<{ user: U
       body: JSON.stringify({ email, password })
     });
 
-    const responseText = await response.text();
-    const responseData = responseText ? JSON.parse(responseText) : {};
-    const data = responseData.data || responseData;
-
     if (!response.ok) {
-      throw new Error(data.error || `Erreur HTTP ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        throw new Error('Identifiants invalides');
+      } else if (response.status === 404) {
+        throw new Error('Utilisateur non trouvé');
+      } else {
+        throw new Error(errorData.error || `Erreur de connexion (${response.status})`);
+      }
     }
 
-    if (!data.token || !data.user) {
-      console.error('Structure de réponse invalide:', responseData);
-      throw new Error('Réponse du serveur invalide');
+    const data = await response.json();
+    if (!data || typeof data !== 'object') {
+      throw new Error('Réponse du serveur invalide: format incorrect');
+    }
+
+    if (!data.token || !data.user || typeof data.user !== 'object') {
+      console.error('Structure de réponse invalide:', data);
+      throw new Error('Réponse du serveur invalide: données manquantes');
+    }
+
+    if (!data.user.id || !data.user.email || !data.user.role) {
+      console.error('Structure de réponse invalide:', data);
+      throw new Error('Réponse du serveur invalide: données utilisateur incomplètes');
     }
 
     return data;

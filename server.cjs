@@ -97,7 +97,16 @@ app.post('/api/auth/signup', async (req, res) => {
     db.prepare('INSERT INTO users (id, email, password_hash, role) VALUES (?, ?, ?, ?)')
       .run(userId, email, hashedPassword, 'user');
 
-    res.status(201).json({ id: userId, email });
+    const sessionToken = uuidv4();
+    const expiresAt = new Date(Date.now() + 86400 * 1000); // 24 hours
+    
+    db.prepare('INSERT INTO sessions (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)')
+      .run(uuidv4(), userId, sessionToken, expiresAt.toISOString());
+
+    res.status(201).json({
+      user: { id: userId, email, role: 'user' },
+      token: sessionToken
+    });
 
   } catch (error) {
     console.error('Signup error:', error);
