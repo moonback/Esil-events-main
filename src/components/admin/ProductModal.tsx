@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Product, ProductFormData } from '../../types/Product';
+import { Category, SubCategory } from '../../services/categoryService';
 
 interface ProductModalProps {
   isOpen: boolean;
@@ -10,6 +11,10 @@ interface ProductModalProps {
 }
 
 const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, product }) => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<SubCategory | null>(null);
+
   const [formData, setFormData] = useState<ProductFormData>({
     name: '',
     reference: '',
@@ -37,6 +42,13 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
         ...product,
         id: product.id
       });
+      
+      // Initialiser les catégories sélectionnées
+      const category = categories.find(c => c.id === product.category_id);
+      setSelectedCategory(category || null);
+      
+      const subCategory = category?.subCategories?.find(s => s.id === product.subcategory_id);
+      setSelectedSubcategory(subCategory || null);
     } else {
       // Reset form when creating a new product
       setFormData({
@@ -62,6 +74,49 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
     }
   }, [product, isOpen]);
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { getAllCategories } = await import('../../services/categoryService');
+        const data = await getAllCategories();
+        setCategories(data);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    };
+
+    if (isOpen) fetchCategories();
+  }, [isOpen]);
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const category = categories.find(c => c.id === e.target.value);
+    setSelectedCategory(category || null);
+    setSelectedSubcategory(null);
+    setFormData(prev => ({
+      ...prev,
+      category_id: e.target.value,
+      subcategory_id: '',
+      subsubcategory_id: ''
+    }));
+  };
+
+  const handleSubcategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const subcategory = selectedCategory?.subCategories?.find(s => s.id === e.target.value);
+    setSelectedSubcategory(subcategory || null);
+    setFormData(prev => ({
+      ...prev,
+      subcategory_id: e.target.value,
+      subsubcategory_id: ''
+    }));
+  };
+
+  const handleSubsubcategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      subsubcategory_id: e.target.value
+    }));
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
@@ -70,8 +125,24 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
     }));
   };
 
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Add this new validation function
+  const validateForm = () => {
+    if (!formData.name.trim()) return 'Le nom est obligatoire';
+    if (!formData.reference.trim()) return 'La référence est obligatoire';
+    if (formData.price_ht <= 0) return 'Le prix HT doit être supérieur à 0';
+    return null;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const error = validateForm();
+    if (error) {
+      setValidationError(error);
+      return;
+    }
+    setValidationError(null);
     onSubmit(formData);
   };
 
@@ -95,6 +166,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {validationError && (
+              <div className="text-red-500 text-sm mb-4">{validationError}</div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -129,38 +203,58 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Catégorie
                 </label>
-                <input
-                  type="text"
+                <select
                   name="category_id"
                   value={formData.category_id}
-                  onChange={handleChange}
+                  onChange={handleCategoryChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
+                >
+                  <option value="">Sélectionner une catégorie</option>
+                  {categories.map(category => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Sous-catégorie
                 </label>
-                <input
-                  type="text"
+                <select
                   name="subcategory_id"
-                  value={formData.subcategory_id || ''}
-                  onChange={handleChange}
+                  value={formData.subcategory_id}
+                  onChange={handleSubcategoryChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
+                  disabled={!selectedCategory}
+                >
+                  <option value="">Sélectionner une sous-catégorie</option>
+                  {selectedCategory?.subCategories?.map(subCategory => (
+                    <option key={subCategory.id} value={subCategory.id}>
+                      {subCategory.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Sous-sous-catégorie
                 </label>
-                <input
-                  type="text"
+                <select
                   name="subsubcategory_id"
-                  value={formData.subsubcategory_id || ''}
-                  onChange={handleChange}
+                  value={formData.subsubcategory_id}
+                  onChange={handleSubsubcategoryChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
+                  disabled={!selectedSubcategory}
+                >
+                  <option value="">Sélectionner une sous-sous-catégorie</option>
+                  {selectedSubcategory?.subSubCategories?.map(subSubCategory => (
+                    <option key={subSubCategory.id} value={subSubCategory.id}>
+                      {subSubCategory.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
