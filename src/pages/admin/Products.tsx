@@ -173,7 +173,14 @@ const AdminProducts: React.FC = () => {
             setIsModalOpen(false);
             await fetchProducts();
           } catch (err) {
-            setError('Erreur lors de la sauvegarde du produit');
+            try {
+          const errorData = err instanceof Response ? await err.json() : err;
+          console.error('Erreur détaillée :', errorData);
+          setError(errorData.message || 'Erreur lors de la sauvegarde du produit');
+        } catch (e) {
+          console.error('Erreur de parsing :', e);
+          setError('Erreur technique lors du traitement de la requête');
+        }
           }
         }}
       />

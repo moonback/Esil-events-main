@@ -387,14 +387,15 @@ app.post('/api/products', (req, res) => {
 
     db.prepare(`
       INSERT INTO products (
-        id, name, reference, category_id, subcategory_id, subsubcategory_id,
+        id, name, slug, reference, category_id, subcategory_id, subsubcategory_id,
         description, price_ht, price_ttc, images, colors, related_products,
         technical_specs, technical_doc_url, video_url, stock, is_available,
         created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       product.id,
       product.name,
+      product.slug,
       product.reference,
       product.category_id,
       product.subcategory_id,

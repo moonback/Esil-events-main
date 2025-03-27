@@ -16,6 +16,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
   const [selectedSubcategory, setSelectedSubcategory] = useState<SubCategory | null>(null);
 
   const [formData, setFormData] = useState<ProductFormData>({
+    slug: '',
     name: '',
     reference: '',
     category_id: '',
@@ -52,6 +53,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
     } else {
       // Reset form when creating a new product
       setFormData({
+        slug: '',
         name: '',
         reference: '',
         category_id: '',
@@ -176,7 +178,13 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
       return;
     }
     setValidationError(null);
+    if (!formData.name || !formData.reference || !formData.category_id || !formData.price_ht || !formData.stock) {
+      alert('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
     onSubmit(formData);
+    onClose();
   };
 
   if (!isOpen) return null;

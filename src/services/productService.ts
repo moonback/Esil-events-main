@@ -37,9 +37,10 @@ export const createProduct = async (productData: ProductFormData): Promise<Produ
     },
     body: JSON.stringify({
       ...productData,
-      category_id: Number(productData.category_id),
-      subcategory_id: Number(productData.subcategory_id),
-      subsubcategory_id: productData.subsubcategory_id ? Number(productData.subsubcategory_id) : null
+      slug: productData.slug,
+      category_id: productData.category_id,
+      subcategory_id: productData.subcategory_id,
+      subsubcategory_id: productData.subsubcategory_id || null
     })
   });
 
@@ -64,9 +65,10 @@ export const updateProduct = async (id: string, productData: ProductFormData): P
     },
     body: JSON.stringify({
       ...productData,
-      category_id: Number(productData.category_id),
-      subcategory_id: Number(productData.subcategory_id),
-      subsubcategory_id: productData.subsubcategory_id ? Number(productData.subsubcategory_id) : null
+      slug: productData.slug,
+      category_id: productData.category_id,
+      subcategory_id: productData.subcategory_id,
+      subsubcategory_id: productData.subsubcategory_id || null
     })
   });
 
@@ -88,6 +90,7 @@ export const deleteProduct = async (id: string): Promise<void> => {
   });
 
   if (!response.ok) {
-    throw new Error('Failed to delete product');
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to delete product');
   }
 };

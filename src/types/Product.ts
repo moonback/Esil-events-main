@@ -1,4 +1,5 @@
 export interface Product {
+  slug: string;
   id: string;
   name: string;
   reference: string;
