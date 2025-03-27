@@ -35,11 +35,17 @@ export const createProduct = async (productData: ProductFormData): Promise<Produ
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(productData)
+    body: JSON.stringify({
+      ...productData,
+      category_id: Number(productData.category_id),
+      subcategory_id: Number(productData.subcategory_id),
+      subsubcategory_id: productData.subsubcategory_id ? Number(productData.subsubcategory_id) : null
+    })
   });
 
   if (!response.ok) {
-    throw new Error('Failed to create product');
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to create product');
   }
 
   const product = await response.json();
@@ -56,7 +62,12 @@ export const updateProduct = async (id: string, productData: ProductFormData): P
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(productData)
+    body: JSON.stringify({
+      ...productData,
+      category_id: Number(productData.category_id),
+      subcategory_id: Number(productData.subcategory_id),
+      subsubcategory_id: productData.subsubcategory_id ? Number(productData.subsubcategory_id) : null
+    })
   });
 
   if (!response.ok) {

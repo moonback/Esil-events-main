@@ -20,7 +20,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
     reference: '',
     category_id: '',
     subcategory_id: '',
-    subsubcategory_id: '',
+    subsubcategory_id: 'null',
     description: '',
     price_ht: 0,
     price_ttc: 0,
@@ -56,7 +56,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
         reference: '',
         category_id: '',
         subcategory_id: '',
-        subsubcategory_id: '',
+        subsubcategory_id: 'null',
         description: '',
         price_ht: 0,
         price_ttc: 0,
@@ -131,6 +131,8 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
   const validateForm = () => {
     if (!formData.name.trim()) return 'Le nom est obligatoire';
     if (!formData.reference.trim()) return 'La référence est obligatoire';
+    if (!formData.category_id) return 'La catégorie est obligatoire';
+    if (!formData.subcategory_id) return 'La sous-catégorie est obligatoire';
     if (formData.price_ht <= 0) return 'Le prix HT doit être supérieur à 0';
     return null;
   };
