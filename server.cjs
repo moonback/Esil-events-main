@@ -179,6 +179,7 @@ db.prepare(`
 
 db.prepare(`
   CREATE TABLE IF NOT EXISTS products (
+    slug TEXT,
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     reference TEXT NOT NULL UNIQUE,
@@ -385,14 +386,16 @@ app.post('/api/products', (req, res) => {
       technical_specs: JSON.stringify(productData.technicalSpecs || {})
     };
 
-    db.prepare(`
+    db.exec("ALTER TABLE products ADD COLUMN slug TEXT");
+    const stmt = db.prepare(`
       INSERT INTO products (
         id, name, slug, reference, category_id, subcategory_id, subsubcategory_id,
         description, price_ht, price_ttc, images, colors, related_products,
         technical_specs, technical_doc_url, video_url, stock, is_available,
         created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
+      product.slug,
       product.id,
       product.name,
       product.slug,
