@@ -116,7 +116,38 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
       subsubcategory_id: e.target.value
     }));
   };
-
+  const handlePrefill = () => {
+    if (!categories.length) {
+      setValidationError('Veuillez d\'abord créer des catégories');
+      return;
+    }
+    
+    const firstCategory = categories?.[0];
+    const firstSubCategory = firstCategory?.subCategories?.[0];
+  
+    setFormData({
+      ...formData,
+      name: 'Produit de test',
+      reference: 'TEST-123',
+      category_id: firstCategory?.id || '',
+      subcategory_id: firstSubCategory?.id || '',
+      subsubcategory_id: 'null',
+      description: 'Description de test pour le produit',
+      price_ht: 100,
+      price_ttc: 120,
+      images: ['https://picsum.photos/200'],
+      colors: ['rouge', 'bleu'],
+      related_products: [],
+      technical_specs: { poids: '1kg', dimensions: '10x20x30' },
+      technical_doc_url: 'https://example.com/doc.pdf',
+      video_url: 'https://example.com/video.mp4',
+      stock: 10,
+      is_available: true,
+      created_at: new Date(),
+      updated_at: new Date()
+    });
+  };
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
@@ -434,6 +465,13 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
 
             <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
               <div className="flex justify-end space-x-3">
+              <button
+                  type="button"
+                  onClick={handlePrefill}
+                  className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  Pré-remplir
+                </button>       
                 <button
                   type="button"
                   onClick={onClose}
@@ -455,5 +493,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
     </div>
   );
 };
+
 
 export default ProductModal;
